@@ -1,16 +1,19 @@
 ﻿namespace CustomSha256.Models.Crypto
 {
+    using System;
+
+    [Serializable]
     public class Block
     {
         /// <summary>
-        /// Hash предыдущего блока
+        /// Hash заголовка предыдущего блока
         /// </summary>
-        public byte[] PreviousHash { get; set; }
+        public byte[] PreviousBlockHeaderHash { get; set; }
 
         /// <summary>
-        /// Hash блока
+        /// Hash всех транзакций в блоке
         /// </summary>
-        public byte[] Hash { get; set; }
+        public byte[] TransactionsHash { get; set; }
 
         /// <summary>
         /// Решение proof of work

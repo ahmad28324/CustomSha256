@@ -1,5 +1,8 @@
 ﻿namespace CustomSha256.Models.Crypto
 {
+    using System;
+
+    [Serializable]
     public class TransactionInput
     {
         /// <summary>
@@ -10,11 +13,12 @@
         /// <summary>
         /// Порядковый номер выхода предыдущей транзакции, в ходе которой средства были получены
         /// </summary>
-        public int PreviousTransactionIndex { get; set; }
+        public int PreviousTransactionOutputIndex { get; set; }
 
         /// <summary>
         /// ScriptSig (доказательства владения монетами) – цифровая подпись и открытый ключ к ней
         /// </summary>
+        [field: NonSerialized]
         public string ScriptSignature { get; set; }
     }
 }

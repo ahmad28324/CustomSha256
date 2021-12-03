@@ -1,5 +1,6 @@
 ﻿namespace CustomSha256
 {
+    using global::CustomSha256.Models.Crypto;
     using System;
     using System.Security.Cryptography;
     using System.Text;
@@ -42,8 +43,17 @@
             {
                 Transaction = transaction,
                 Signature = encryptedHash,
-                PublicKeyInfo = _rsaCryptoServiceProvider.ExportParameters(false),
+                //PublicKeyInfo = _rsaCryptoServiceProvider.ExportParameters(false),
+                PublicKeyInfo = _rsaCryptoServiceProvider.ToXmlString(false),
             };
+        }
+
+        public byte[] CreateSignature(Transaction transaction)
+        {
+            var hash = Utils.ComputeSha256Hash(Utils.ObjectToByteArray(transaction));
+            var encryptedHash = _rsaCryptoServiceProvider.SignHash(hash, CryptoConfig.MapNameToOID("SHA256"));
+
+            return encryptedHash;
         }
 
         public void Dispose()

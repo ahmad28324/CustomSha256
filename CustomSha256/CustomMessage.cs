@@ -8,6 +8,7 @@
 
         public byte[] Signature { get; set; }
 
-        public RSAParameters PublicKeyInfo { get; set; }
+        //public RSAParameters PublicKeyInfo { get; set; }
+        public string PublicKeyInfo { get; set; }
     }
 }

@@ -1,5 +1,8 @@
 ﻿namespace CustomSha256.Models.Crypto
 {
+    using System;
+
+    [Serializable]
     public class TransactionOutput
     {
         /// <summary>
