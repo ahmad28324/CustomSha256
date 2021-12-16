@@ -112,6 +112,7 @@ namespace NetworkHost
             {
                 case Header.Transaction:
                     {
+                        // DO myself serialization newtonsoft.json
                         Console.WriteLine("TRANSACTION");
                         Transaction transaction = (Transaction)Utils.ByteArrayToObject(data);
                         return transaction;
