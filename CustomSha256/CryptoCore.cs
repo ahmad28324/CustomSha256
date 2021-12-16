@@ -8,6 +8,9 @@
     using System.IO;
     using System.Security.Cryptography;
 
+    using NetworkHost;
+    using System.Text;
+
     public class CryptoCore
     {
         private const string NodesInfoPath = "nodesInfo.json";
@@ -369,6 +372,38 @@
             }
 
             return (transactionToSpend, transactionToSpendOutputIndex);
+        }
+        public void getDataByHeader(Header header, byte[] data)
+        {
+            switch (header)
+            {
+                case Header.Transaction:
+                    {
+                        // TODO: 
+                        // Serialize transaction from bytes
+                        // Transaction transaction = new TransactionFromBytes(data);
+                        Console.WriteLine("TRANSACTION:");
+                        Console.WriteLine(Encoding.UTF8.GetString(data));
+                        break;
+                    }
+                case Header.Block:
+                    {
+                        // TODO: 
+                        // Serialize block from bytes
+                        // Block block = new BlockFromBytes(data);
+                        Console.WriteLine("BLOCK:");
+                        Console.WriteLine(Encoding.UTF8.GetString(data));
+                        break;
+                    }
+                case Header.Unknow:
+                    {
+                        // TODO: 
+                        // Unknow header!
+                        Console.WriteLine("UNKNOW:");
+                        Console.WriteLine(Encoding.UTF8.GetString(data));
+                        break;
+                    }
+            }
         }
     }
 }

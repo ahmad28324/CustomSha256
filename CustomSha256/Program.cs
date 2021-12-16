@@ -1,5 +1,9 @@
 ﻿namespace CustomSha256
 {
+    using NetworkHost;
+    using System.Net;
+    using System.Text;
+
     class Program
     {
         private const string Key1 = "<RSAKeyValue><Modulus>2ulxPTVJiEwYZ8LGtCmZT7bFMs6q/lt2F/nOfjJHAWMB3N9scqFO/ttl69mnR535jqr09MYQQirBUvXlpoVIrCw68I/0eCBzfCRF3C+yCLp4ga6Hj3EpBnKIqJKSg7Q0p0+0/BqYf5hYxtqA4wFip7VZIHPSbPmRjRiF5bfzWk0=</Modulus><Exponent>AQAB</Exponent><P>8/XNGfISCPZyWJl9WPsvdXUQYPVcSYi+xAvXU7cWuIaFO8QPuk8EHlOd4yJUetB7+yCB8Yje/mFg28OCgTFfCw==</P><Q>5bcuPAo3o6/y4jmRIAvc0uWnGoBCd9P+thOUIzbHxh7pv+8vFgSXEAxPNbNYx7xhMeAC1gPbo9+Y0qMKiNnjBw==</Q><DP>Yw8UyAs9/XusdINmnWHpJGVzUBtw7L7kzxAL0AdQ535fzSPQSxNYlcPYIWlIKlJLdW3+tYehHGOIA9RAQps8fw==</DP><DQ>cOdWpxXSgPZSp1Pp+1k5QMK1HfZaNPESKMV4stIS4FKDSt2xQ94frTiPmfI7OXhiQRQ78JpW0rVsNGMEI30L8w==</DQ><InverseQ>Z0E59qZ019Cc3s4hD46Ps9xnnKLLoTd0QpKAS5SzHqjZ16E7Axlzu4KRDMzbV7CODlrkq5O6nbrMO4WwVM7uIg==</InverseQ><D>voa0bvBE6mJIT25/YGhgLbfGE705p51Uv/NEHCOIFxXjlifCjFYGmdu77jSF2dgNTnVOMwd7OQtbLOglEvQn1U16jfcBIPTah9lweMhGMubjNIuUTqXCp7PEbFH1z3A5EW5UATp1kVMGKgfcCi/ohJh8fijGlDxYPaT8WUMqoIU=</D></RSAKeyValue>";
@@ -20,6 +24,12 @@
             cryptoCore.CreateTransaction(Key2, 5);
 
             balance = cryptoCore.GetBalance();
+
+            Host host = new Host(IPAddress.Loopback, 11004);
+
+            host.dataReceived += cryptoCore.getDataByHeader;
+            host.startListeningInThread();
+            host.sendTransaction(Encoding.UTF8.GetBytes("Transaction123"));
         }
     }
 }

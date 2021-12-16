@@ -8,12 +8,28 @@ namespace NetworkHost
     using System.Net;
     using System.Net.Sockets;
     using System.Threading;
-
+    using System.Collections.Generic;
     public enum Header : byte
     {
         Transaction = 0,
         Block = 1,
         Unknow = 255
+    }
+    public class DNS
+    {
+        private List<IPEndPoint> m_IPEndPoints = new List<IPEndPoint>() 
+        {
+            new IPEndPoint(IPAddress.Loopback, 11000),
+            new IPEndPoint(IPAddress.Loopback, 11004),
+            new IPEndPoint(IPAddress.Loopback, 11008)
+        };
+
+        public List<IPEndPoint> GetListIPEndPoints(IPEndPoint self_IPEndPoint)
+        {
+            List<IPEndPoint> list = new List<IPEndPoint>(m_IPEndPoints);
+            list.Remove(self_IPEndPoint);
+            return list;
+        }
     }
     public class Host
     {
@@ -23,11 +39,16 @@ namespace NetworkHost
         private IPEndPoint m_endpoint_listen;
         private TcpListener m_listener;
         private bool m_is_listening = false;
+        private DNS m_dns = new DNS();
+
+        public delegate void MethodAcceptData(Header header, byte[] data);
+        public event MethodAcceptData dataReceived;
         public Host(IPAddress addres, int port)
         {
             m_address = addres;
             m_port = port;
-            m_listener = new TcpListener(new IPEndPoint(m_address, m_port));
+            m_endpoint_listen = new IPEndPoint(m_address, m_port);
+            m_listener = new TcpListener(m_endpoint_listen);
         }
 
         public void startListening()
@@ -36,7 +57,6 @@ namespace NetworkHost
             m_listener.Start();
             Console.WriteLine("listening start: " + m_address + " " + m_port);
 
-            // в отдельный поток, или спец. функция. ConceletionToken
             while (m_is_listening)
             {
                 if (m_listener.Pending())
@@ -51,7 +71,7 @@ namespace NetworkHost
                     byte[] data = new byte[num_real_bytes];
                     Array.Copy(buffer, data, data.Length);
 
-                    object obj = parseGotData(data);
+                    parseGotData(data);
                 }
             }
             m_is_listening = false;
@@ -75,9 +95,25 @@ namespace NetworkHost
         {
             sendDataWithHeader(address, port, Header.Transaction, transaction);
         }
+        public void sendTransaction(byte[] transaction)
+        {
+            List<IPEndPoint> endpoints = m_dns.GetListIPEndPoints(m_endpoint_listen);
+            foreach(IPEndPoint endpoint in endpoints)
+            {
+                sendTransaction(endpoint.Address, endpoint.Port, transaction);
+            }
+        }
         public void sendBlock(IPAddress address, int port, byte[] block)
         {
             sendDataWithHeader(address, port, Header.Block, block);
+        }
+        public void sendBlock(byte[] block)
+        {
+            List<IPEndPoint> endpoints = m_dns.GetListIPEndPoints(m_endpoint_listen);
+            foreach (IPEndPoint endpoint in endpoints)
+            {
+                sendBlock(endpoint.Address, endpoint.Port, block);
+            }
         }
         private void sendDataWithHeader(IPAddress address, int port, Header header, byte[] p_data)
         {
@@ -103,31 +139,30 @@ namespace NetworkHost
                 Console.WriteLine(ex.ToString());
             }
         }
-        private object parseGotData(byte[] data)
+        private void parseGotData(byte[] data)
         {
-            //string message = Encoding.UTF8.GetString(data);
-            //Console.WriteLine(message);
-
             switch ((Header)data[0])
             {
                 case Header.Transaction:
                     {
-                        // DO myself serialization newtonsoft.json
-                        Console.WriteLine("TRANSACTION");
-                        Transaction transaction = (Transaction)Utils.ByteArrayToObject(data);
-                        return transaction;
+                        byte[] transaction = new byte[data.Length - 1];
+                        Array.Copy(data, 1, transaction, 0, data.Length - 1);
+                        dataReceived(Header.Transaction, transaction);
+                        break;
                     }
                 case Header.Block:
                     {
-                        Console.WriteLine("BLOCK");
-                        Block block = (Block)Utils.ByteArrayToObject(data);
-                        return block;
+                        byte[] block = new byte[data.Length - 1];
+                        Array.Copy(data, 1, block, 0, data.Length - 1);
+                        dataReceived(Header.Block, block);
+                        break;
                     }
                 default: 
                     {
-                        Console.WriteLine(data[0]);
-                        Console.WriteLine(Encoding.UTF8.GetString(data, 1, data.Length - 1));
-                        return null;
+                        byte[] unknow = new byte[data.Length - 1];
+                        Array.Copy(data, 1, unknow, 0, data.Length - 1);
+                        dataReceived(Header.Unknow, unknow);
+                        break;
                     }
             }
         }
